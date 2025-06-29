@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:pc_3_shopping_list/theme/colors.dart';
+import 'package:provider/provider.dart';
+import '../../providers/shopping_list_provider.dart';
+import '../../theme/colors.dart';
 
 class AddItemDialog extends StatefulWidget {
   const AddItemDialog({super.key});
@@ -15,12 +17,48 @@ class _AddItemDialogState extends State<AddItemDialog> {
   final _quantityController = TextEditingController();
   String _selectedUnit = 'ml';
   final List<String> _units = ['ml', 'g', 'kg', 'pcs'];
+  bool _isLoading = false;
 
   @override
   void dispose() {
     _nameController.dispose();
     _quantityController.dispose();
     super.dispose();
+  }
+
+  Future<void> _handleSubmit() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    setState(() => _isLoading = true);
+
+    try {
+      final quantity = _quantityController.text.isNotEmpty
+          ? '${_quantityController.text}${_selectedUnit}'
+          : null;
+
+      await context.read<ShoppingListProvider>().addItem(
+        _nameController.text.trim(),
+        quantity,
+      );
+
+      if (mounted) Navigator.pop(context);
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Failed to add item: ${e.toString()}',
+              style: const TextStyle(color: Colors.white),
+            ),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
   }
 
   @override
@@ -68,7 +106,7 @@ class _AddItemDialogState extends State<AddItemDialog> {
                   ),
                 ),
                 validator: (value) {
-                  if (value == null || value.isEmpty) {
+                  if (value == null || value.trim().isEmpty) {
                     return 'Please enter an item name';
                   }
                   return null;
@@ -85,7 +123,7 @@ class _AddItemDialogState extends State<AddItemDialog> {
                       keyboardType: TextInputType.number,
                       inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                       decoration: InputDecoration(
-                        labelText: 'Quantity',
+                        labelText: 'Quantity (Optional)',
                         labelStyle: TextStyle(color: fontSecondaryColor),
                         enabledBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
@@ -104,12 +142,6 @@ class _AddItemDialogState extends State<AddItemDialog> {
                           borderSide: BorderSide(color: Colors.red),
                         ),
                       ),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Required';
-                        }
-                        return null;
-                      },
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -137,9 +169,7 @@ class _AddItemDialogState extends State<AddItemDialog> {
                           }).toList(),
                           onChanged: (String? newValue) {
                             if (newValue != null) {
-                              setState(() {
-                                _selectedUnit = newValue;
-                              });
+                              setState(() => _selectedUnit = newValue);
                             }
                           },
                         ),
@@ -153,32 +183,41 @@ class _AddItemDialogState extends State<AddItemDialog> {
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
                   TextButton(
-                    onPressed: () => Navigator.pop(context),
+                    onPressed: _isLoading ? null : () => Navigator.pop(context),
                     child: Text(
                       'Cancel',
-                      style: TextStyle(color: fontSecondaryColor),
+                      style: TextStyle(
+                        color: _isLoading
+                            ? fontSecondaryColor.withValues(alpha: 0.5)
+                            : fontSecondaryColor,
+                      ),
                     ),
                   ),
                   const SizedBox(width: 12),
                   ElevatedButton(
-                    onPressed: () {
-                      if (_formKey.currentState!.validate()) {
-                        // Return the new item data
-                        Navigator.pop(context, {
-                          'name': _nameController.text,
-                          'quantity': _quantityController.text,
-                          'unit': _selectedUnit,
-                        });
-                      }
-                    },
+                    onPressed: _isLoading ? null : _handleSubmit,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: primaryColor,
                       foregroundColor: backgroundColor,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
+                      disabledBackgroundColor: primaryColor.withValues(
+                        alpha: 0.5,
+                      ),
                     ),
-                    child: const Text('Add Item'),
+                    child: _isLoading
+                        ? const SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              valueColor: AlwaysStoppedAnimation<Color>(
+                                Colors.black,
+                              ),
+                            ),
+                          )
+                        : const Text('Add Item'),
                   ),
                 ],
               ),

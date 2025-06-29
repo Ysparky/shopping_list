@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:pc_3_shopping_list/theme/colors.dart';
-import 'package:pc_3_shopping_list/widgets/shopping_list/add_item_dialog.dart';
+import '../theme/colors.dart';
+import 'shopping_list/add_item_dialog.dart';
 
 class AnimatedAddButton extends StatelessWidget {
   const AnimatedAddButton({super.key, required bool showFab})
@@ -9,17 +9,10 @@ class AnimatedAddButton extends StatelessWidget {
   final bool _showFab;
 
   Future<void> _showAddItemDialog(BuildContext context) async {
-    final result = await showDialog<Map<String, String>>(
+    await showDialog<void>(
       context: context,
       builder: (context) => const AddItemDialog(),
     );
-
-    if (result != null) {
-      // TODO: Handle the new item data
-      print(
-        'New item: ${result['name']} - ${result['quantity']}${result['unit']}',
-      );
-    }
   }
 
   @override
@@ -29,7 +22,7 @@ class AnimatedAddButton extends StatelessWidget {
       left: _showFab ? null : 0,
       bottom: 20,
       child: Padding(
-        padding: EdgeInsets.symmetric(horizontal: 16),
+        padding: const EdgeInsets.symmetric(horizontal: 16),
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 300),
           curve: Curves.easeInOut,
@@ -54,9 +47,9 @@ class AnimatedAddButton extends StatelessWidget {
                         children: [
                           Icon(Icons.add, color: backgroundColor),
                           if (!_showFab) ...[
-                            SizedBox(width: 8),
+                            const SizedBox(width: 8),
                             Text(
-                              'Agregar nuevo item',
+                              'Add New Item',
                               style: Theme.of(context).textTheme.titleMedium
                                   ?.copyWith(
                                     color: backgroundColor,
