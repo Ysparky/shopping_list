@@ -3,20 +3,51 @@ import 'package:pc_3_shopping_list/models/shopping_item.dart';
 import 'package:pc_3_shopping_list/providers/shopping_list_provider.dart';
 import 'package:pc_3_shopping_list/theme/colors.dart';
 import 'package:provider/provider.dart';
+import '../custom_snackbar.dart';
 
-class ItemWidget extends StatelessWidget {
+class ItemWidget extends StatefulWidget {
   final ShoppingItem item;
 
   const ItemWidget({super.key, required this.item});
 
   @override
-  Widget build(BuildContext context) {
-    final provider = context.read<ShoppingListProvider>();
+  State<ItemWidget> createState() => _ItemWidgetState();
+}
 
+class _ItemWidgetState extends State<ItemWidget> {
+  bool _isUpdating = false;
+
+  Future<void> _handleCheckboxChange(bool? value) async {
+    if (value == null || _isUpdating) return;
+
+    setState(() => _isUpdating = true);
+
+    try {
+      await context.read<ShoppingListProvider>().updateItem(
+        widget.item.id,
+        isPurchased: value,
+      );
+    } catch (e) {
+      if (mounted) {
+        CustomSnackBar.show(
+          context,
+          message: 'Error al actualizar el item',
+          isError: true,
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isUpdating = false);
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
       child: Dismissible(
-        key: Key(item.id),
+        key: Key(widget.item.id),
         direction: DismissDirection.endToStart,
         confirmDismiss: (direction) async => await _showDeleteDialog(context),
         background: Container(
@@ -28,7 +59,10 @@ class ItemWidget extends StatelessWidget {
           alignment: Alignment.centerRight,
           child: const Icon(Icons.delete_rounded, color: fontColor),
         ),
-        onDismissed: (direction) => provider.deleteItem(item.id),
+        onDismissed: (direction) {
+          context.read<ShoppingListProvider>().deleteItem(widget.item.id);
+          CustomSnackBar.show(context, message: 'Item eliminado exitosamente');
+        },
         child: ListTile(
           tileColor: tileBackgroundColor,
           shape: RoundedRectangleBorder(
@@ -37,23 +71,28 @@ class ItemWidget extends StatelessWidget {
           leading: SizedBox(
             width: 24,
             height: 24,
-            child: Transform.scale(
-              scale: 1.2,
-              child: Checkbox(
-                shape: const CircleBorder(),
-                side: BorderSide(color: fontColor, width: 2),
-                activeColor: primaryColor,
-                checkColor: backgroundColor,
-                value: item.isPurchased,
-                onChanged: (value) {
-                  if (value != null) {
-                    provider.updateItem(item.id, isPurchased: value);
-                  }
-                },
-              ),
-            ),
+            child: _isUpdating
+                ? SizedBox(
+                    width: 24,
+                    height: 24,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      valueColor: AlwaysStoppedAnimation<Color>(primaryColor),
+                    ),
+                  )
+                : Transform.scale(
+                    scale: 1.2,
+                    child: Checkbox(
+                      shape: const CircleBorder(),
+                      side: BorderSide(color: fontColor, width: 2),
+                      activeColor: primaryColor,
+                      checkColor: backgroundColor,
+                      value: widget.item.isPurchased,
+                      onChanged: _handleCheckboxChange,
+                    ),
+                  ),
           ),
-          trailing: item.quantity != null
+          trailing: widget.item.quantity != null
               ? Container(
                   padding: const EdgeInsets.symmetric(
                     horizontal: 12,
@@ -64,7 +103,7 @@ class ItemWidget extends StatelessWidget {
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Text(
-                    item.quantity!,
+                    widget.item.quantity!,
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                       color: primaryColor,
                       fontWeight: FontWeight.w600,
@@ -75,16 +114,16 @@ class ItemWidget extends StatelessWidget {
           title: AnimatedDefaultTextStyle(
             duration: const Duration(milliseconds: 200),
             style: Theme.of(context).textTheme.titleMedium!.copyWith(
-              color: item.isPurchased ? fontSecondaryColor : fontColor,
+              color: widget.item.isPurchased ? fontSecondaryColor : fontColor,
               fontWeight: FontWeight.w600,
-              decoration: item.isPurchased
+              decoration: widget.item.isPurchased
                   ? TextDecoration.lineThrough
                   : TextDecoration.none,
-              decorationColor: item.isPurchased
+              decorationColor: widget.item.isPurchased
                   ? fontSecondaryColor
                   : fontColor,
             ),
-            child: Text(item.name),
+            child: Text(widget.item.name),
           ),
         ),
       ),
@@ -98,7 +137,7 @@ class ItemWidget extends StatelessWidget {
         backgroundColor: tileBackgroundColor,
         title: Text('Borrar item', style: TextStyle(color: fontColor)),
         content: Text(
-          '¿Estás seguro de querer borrar "${item.name}"?',
+          '¿Estás seguro de querer borrar "${widget.item.name}"?',
           style: TextStyle(color: fontColor),
         ),
         actions: [

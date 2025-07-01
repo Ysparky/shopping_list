@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../../providers/shopping_list_provider.dart';
 import '../../theme/colors.dart';
+import '../../widgets/custom_snackbar.dart';
 
 class AddItemDialog extends StatefulWidget {
   const AddItemDialog({super.key});
@@ -15,8 +16,15 @@ class _AddItemDialogState extends State<AddItemDialog> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _quantityController = TextEditingController();
-  String _selectedUnit = 'ml';
-  final List<String> _units = ['ml', 'g', 'kg', 'pcs'];
+  String _selectedUnit = 'unidad';
+
+  final Map<String, List<String>> _unitCategories = {
+    'Unidades': ['unidad', 'par', 'docena', 'paquete'],
+    'Peso': ['g', 'kg', 'lb'],
+    'Volumen': ['ml', 'l', 'oz'],
+    'Longitud': ['cm', 'm'],
+  };
+
   bool _isLoading = false;
 
   @override
@@ -33,7 +41,7 @@ class _AddItemDialogState extends State<AddItemDialog> {
 
     try {
       final quantity = _quantityController.text.isNotEmpty
-          ? '${_quantityController.text}${_selectedUnit}'
+          ? '${_quantityController.text}$_selectedUnit'
           : null;
 
       await context.read<ShoppingListProvider>().addItem(
@@ -41,17 +49,16 @@ class _AddItemDialogState extends State<AddItemDialog> {
         quantity,
       );
 
-      if (mounted) Navigator.pop(context);
+      if (mounted) {
+        Navigator.pop(context);
+        CustomSnackBar.show(context, message: 'Item agregado exitosamente');
+      }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              'Failed to add item: ${e.toString()}',
-              style: const TextStyle(color: Colors.white),
-            ),
-            backgroundColor: Colors.red,
-          ),
+        CustomSnackBar.show(
+          context,
+          message: 'Error al agregar item: ${e.toString()}',
+          isError: true,
         );
       }
     } finally {
@@ -59,6 +66,52 @@ class _AddItemDialogState extends State<AddItemDialog> {
         setState(() => _isLoading = false);
       }
     }
+  }
+
+  List<DropdownMenuItem<String>> _buildDropdownItems() {
+    List<DropdownMenuItem<String>> items = [];
+
+    _unitCategories.forEach((category, units) {
+      // Agregar el encabezado de la categoría
+      items.add(
+        DropdownMenuItem<String>(
+          enabled: false,
+          child: Text(
+            category,
+            style: TextStyle(
+              color: fontSecondaryColor,
+              fontWeight: FontWeight.bold,
+              fontSize: 14,
+            ),
+          ),
+        ),
+      );
+
+      // Agregar las unidades de la categoría
+      items.addAll(
+        units.map(
+          (unit) => DropdownMenuItem<String>(
+            value: unit,
+            child: Padding(
+              padding: const EdgeInsets.only(left: 12.0),
+              child: Text(unit, overflow: TextOverflow.ellipsis),
+            ),
+          ),
+        ),
+      );
+
+      // Agregar un divisor si no es la última categoría
+      if (category != _unitCategories.keys.last) {
+        items.add(
+          DropdownMenuItem<String>(
+            enabled: false,
+            child: Divider(color: fontSecondaryColor),
+          ),
+        );
+      }
+    });
+
+    return items;
   }
 
   @override
@@ -147,7 +200,7 @@ class _AddItemDialogState extends State<AddItemDialog> {
                   const SizedBox(width: 12),
                   Expanded(
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                      padding: const EdgeInsets.symmetric(horizontal: 8),
                       decoration: BoxDecoration(
                         border: Border.all(color: fontSecondaryColor),
                         borderRadius: BorderRadius.circular(12),
@@ -160,13 +213,9 @@ class _AddItemDialogState extends State<AddItemDialog> {
                             Icons.arrow_drop_down,
                             color: fontSecondaryColor,
                           ),
-                          style: TextStyle(color: fontColor),
-                          items: _units.map((String unit) {
-                            return DropdownMenuItem<String>(
-                              value: unit,
-                              child: Text(unit),
-                            );
-                          }).toList(),
+                          isExpanded: true,
+                          style: TextStyle(color: fontColor, fontSize: 14),
+                          items: _buildDropdownItems(),
                           onChanged: (String? newValue) {
                             if (newValue != null) {
                               setState(() => _selectedUnit = newValue);

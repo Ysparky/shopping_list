@@ -16,18 +16,23 @@ class _SearchWidgetState extends State<SearchWidget> {
   final TextEditingController _searchController = TextEditingController();
   bool _isSearchFocused = false;
 
-  @override
-  void initState() {
-    super.initState();
-    widget.focusNode.addListener(() {
+  void _onFocusChange() {
+    if (mounted) {
       setState(() {
         _isSearchFocused = widget.focusNode.hasFocus;
       });
-    });
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    widget.focusNode.addListener(_onFocusChange);
   }
 
   @override
   void dispose() {
+    widget.focusNode.removeListener(_onFocusChange);
     _searchController.dispose();
     super.dispose();
   }
