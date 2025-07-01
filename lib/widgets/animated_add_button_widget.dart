@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../theme/colors.dart';
-import 'shopping_list/add_item_dialog.dart';
+import 'package:pc_3_shopping_list/theme/colors.dart';
+import 'package:pc_3_shopping_list/widgets/shopping_list/add_item_dialog.dart';
 
 class AnimatedAddButton extends StatelessWidget {
   const AnimatedAddButton({super.key, required bool showFab})

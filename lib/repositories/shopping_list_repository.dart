@@ -1,4 +1,4 @@
-import '../models/shopping_item.dart';
+import 'package:pc_3_shopping_list/models/shopping_item.dart';
 
 abstract class ShoppingListRepository {
   Future<List<ShoppingItem>> getItems();

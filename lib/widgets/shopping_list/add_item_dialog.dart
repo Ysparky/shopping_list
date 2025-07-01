@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
-import '../../providers/shopping_list_provider.dart';
-import '../../theme/colors.dart';
-import '../../widgets/custom_snackbar.dart';
+import 'package:pc_3_shopping_list/providers/shopping_list_provider.dart';
+import 'package:pc_3_shopping_list/theme/colors.dart';
+import 'package:pc_3_shopping_list/widgets/custom_snackbar.dart';
 
 class AddItemDialog extends StatefulWidget {
   const AddItemDialog({super.key});

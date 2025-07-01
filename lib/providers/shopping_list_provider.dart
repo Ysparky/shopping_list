@@ -1,6 +1,6 @@
 import 'package:flutter/foundation.dart';
-import '../models/shopping_item.dart';
-import '../repositories/shopping_list_repository.dart';
+import 'package:pc_3_shopping_list/models/shopping_item.dart';
+import 'package:pc_3_shopping_list/repositories/shopping_list_repository.dart';
 
 class ShoppingListProvider extends ChangeNotifier {
   final ShoppingListRepository _repository;

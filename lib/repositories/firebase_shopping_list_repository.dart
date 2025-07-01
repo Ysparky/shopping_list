@@ -1,8 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:uuid/uuid.dart';
-import '../models/shopping_item.dart';
-import 'shopping_list_repository.dart';
+import 'package:pc_3_shopping_list/models/shopping_item.dart';
+import 'package:pc_3_shopping_list/repositories/shopping_list_repository.dart';
 
 class FirebaseShoppingListRepository implements ShoppingListRepository {
   final FirebaseFirestore _firestore;

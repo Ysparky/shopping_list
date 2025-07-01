@@ -3,10 +3,10 @@ import 'package:flutter/services.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:provider/provider.dart';
-import '../providers/shopping_list_provider.dart';
-import '../theme/colors.dart';
-import '../widgets/widgets.dart';
-import '../models/shopping_item.dart';
+import 'package:pc_3_shopping_list/providers/shopping_list_provider.dart';
+import 'package:pc_3_shopping_list/theme/colors.dart';
+import 'package:pc_3_shopping_list/widgets/widgets.dart';
+import 'package:pc_3_shopping_list/models/shopping_item.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});

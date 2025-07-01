@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../theme/colors.dart';
 
 class CustomSnackBar extends SnackBar {
   CustomSnackBar({super.key, required String message, bool isError = false})
