@@ -61,16 +61,34 @@ Before you begin, ensure you have:
 
 ## Project Structure
 
+The project follows a clean, flat architecture for simplicity and maintainability:
+
 ```
 lib/
-├── features/          # Feature modules
-├── models/           # Data models
-├── pages/            # Screen widgets
-├── providers/        # State management
-├── repositories/     # Data layer
-├── theme/           # App theme and styling
-├── utils/           # Utility functions
-└── widgets/         # Reusable widgets
+├── models/           # Data models for the application
+│   └── shopping_item.dart
+├── pages/           # Main screen widgets
+│   └── home_page.dart
+├── providers/       # State management using Provider
+│   └── shopping_list_provider.dart
+├── repositories/    # Data access layer
+│   ├── shopping_list_repository.dart
+│   └── firebase_shopping_list_repository.dart
+├── theme/          # App theming and styling
+│   ├── app_theme.dart
+│   └── colors.dart
+├── utils/          # Helper functions and utilities
+│   └── date_helper.dart
+├── widgets/        # Reusable UI components
+│   ├── animated_add_button_widget.dart
+│   ├── custom_snackbar.dart
+│   ├── header_widget.dart
+│   └── shopping_list/
+│       ├── add_item_dialog.dart
+│       ├── item.dart
+│       └── search.dart
+├── main.dart       # Application entry point
+└── firebase_options.dart  # Firebase configuration
 ```
 
 ## Firebase Collections
